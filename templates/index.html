@@ -1,0 +1,260 @@
+<html>
+  <head>
+    <title>Rod tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='vendor/axios/axios.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </head>
+  <body>
+    <section id="streaming_viewer">
+      <h1 align="center">Rod tracker</h1>
+      <img id="background" class="center" src="{{ url_for('video_feed') }}">
+    </section>
+
+    <section id="actions">
+      <h2>Actions</h2>
+        <div>
+          <!-- Button to update the system's status -->
+           <button onclick="updateStatus()">Update status</button>
+           <button onclick="requestStartMotor()">Start motor</button>
+           <button onclick="requestStopMotor()">Stop Motor</button>
+
+          <!-- 'Start motor' button with corresponding request after clicking -->
+          <!-- ... -->
+        </div>
+
+  </section>
+
+  <section id="monitoring_info">
+    <h2>Monitoring information</h2>
+    <!-- HTML elements for 'Motor status' information -->
+    <!-- ... -->
+     <p><b>Motor Status:<span id="motor_status"></span></b>
+     <p><b>Distance:<span id="shape_distance"></span></b>
+    <!-- HTML elements for 'Current shape' information -->
+    <!-- ... -->
+    <p><b>Current shape from Open CV:</b>
+      <b>Triangle: </b><span id="triangle_open_cv"></span>,
+      <b>Square: </b><span id="square_open_cv"></span>,
+      <b>Circle: </b><span id="circle_open_cv"></span>
+    </p>
+
+    <p><b>Current shape from Distance:</b>
+      <b>Triangle: </b><span id="triangle_from_distance"></span>,
+      <b>Square: </b><span id="square_from_distance"></span>,
+      <b>Circle: </b><span id="circle_from_distance"></span>
+    </p>
+
+    <!-- HTML elements for 'Distance' information -->
+    <!-- ... -->
+
+
+  </section>
+  </body>
+</html>
+
+
+
+
+<script>
+  /**
+ * Updates the current shape, distance and motor status calling
+ * the corresponding methods.
+ */
+  function updateStatus() {
+      // Update current shape based on Open CV
+
+      (async () => await updateCurrentShapeOpenCV())();
+      // Update motor status
+      //...
+      (async () => await updateMotorStatus())();
+      // Update current distance
+      (async () => await updateCurrentShapeDistance())();
+
+      (async () => await updateDistance())();
+
+      //...
+
+  }
+
+  /**
+   * Update the current shape based on OpenCV.
+   */
+  async function updateCurrentShapeOpenCV() {
+      try {
+          // Request shape from server
+          const requestResult = await requestShapeFromOpenCV()
+          console.log(requestResult)
+          // Get the HTML element where the status is displayed
+          const triangle_open_cv = document.getElementById('triangle_open_cv')
+          triangle_open_cv.innerHTML = requestResult.data[0]
+          const square_open_cv = document.getElementById('square_open_cv')
+          square_open_cv.innerHTML = requestResult.data[1]
+          const circle_open_cv = document.getElementById('circle_open_cv')
+          circle_open_cv.innerHTML = requestResult.data[2]
+
+      } catch (e) {
+          console.log('Error getting the shape based on OpenCV', e)
+          updateStatus('Error getting the shape based on OpenCV')
+      }
+  }
+
+  /**
+   * Function to request the server to update the current
+   * shape based on OpenCV.
+   */
+  function requestShapeFromOpenCV() {
+      try {
+          // Make request to server
+          return axios.get('/get_shape_from_opencv')
+      } catch (e) {
+          console.log('Error getting the status', e)
+          updateStatus('Error getting the status')
+
+      }
+  }
+
+
+  /**
+   * Function to request the server to start the motor.
+   */
+  function requestStartMotor() {
+      //...
+      try {
+          // Make request to server
+          return axios.get('/start_motor')
+          (async () => await updateMotorStatus())();
+      } catch (e) {
+          console.log('Error starting the Motor', e)
+          updateStatus('Error starting the Motor')
+
+      }
+  }
+
+
+
+  /**
+   * Function to request the server to stop the motor.
+   */
+  function requestStopMotor() {
+      //...
+      try {
+
+          return axios.get('/stop_motor');
+          (async () => await updateMotorStatus())();
+      } catch (e) {
+          console.log('Error starting the Motor', e)
+          updateStatus('Error starting the Motor')
+
+      }
+  }
+
+  function requestMotorStatus() {
+      //...
+      try {
+          // Make request to server
+          return axios.get('/motor_status')
+      } catch (e) {
+          console.log('Error starting the Motor', e)
+          updateStatus('Error starting the Motor')
+
+      }
+  }
+  /**
+   * Update the status of the motor.
+   * @param {String} status
+   */
+  async function updateMotorStatus(status) {
+      try{
+            // Get the HTML element where the status is displayed
+        const requestResult = await requestMotorStatus()
+        console.log(requestResult.data)
+        const motor_status = document.getElementById('motor_status')
+        if (requestResult.data === true)
+        {
+            motor_status.innerHTML = 'Motor is Running'
+        }
+        else{
+            motor_status.innerHTML = 'Motor has Stopped'
+      }
+    }
+      catch (e) {
+          console.log('Error getting the Motor Status', e)
+          updateStatus('Error getting the Motor Status')
+      }
+
+  }
+
+  /**
+   * Update the current shape based on distance sensor.
+   */
+  async function updateDistance() {
+      // Get the HTML element where the status is displayed
+      // ...
+      const distance = await requestDistance()
+      console.log(distance.data)
+      const shape_distance = document.getElementById('shape_distance')
+      shape_distance.innerHTML = distance.data
+
+  }
+
+
+  /**
+   * Function to request the server to get the distance from
+   * the rod to the ultrasonic sensor.
+   */
+  function requestDistance() {
+      //...
+    try {
+          // Make request to server
+          return axios.get('/get_distance')
+      } catch (e) {
+          console.log('Error starting the Motor', e)
+          updateStatus('Error starting the Motor')
+
+      }
+  }
+
+
+  /**
+   * Update the current shape based on distance sensor.
+   */
+  async function updateCurrentShapeDistance() {
+      // Get the HTML element where the status is displayed
+      // ...
+      try {
+          // Request shape from server
+          const requestResult = await requestShapeFromDistance()
+          console.log(requestShapeFromDistance)
+          // Get the HTML element where the status is displayed
+          const triangle_open_cv = document.getElementById('triangle_from_distance')
+          triangle_open_cv.innerHTML = requestResult.data[0]
+          const square_open_cv = document.getElementById('square_from_distance')
+          square_open_cv.innerHTML = requestResult.data[1]
+          const circle_open_cv = document.getElementById('circle_from_distance')
+          circle_open_cv.innerHTML = requestResult.data[2]
+
+      } catch (e) {
+          console.log('Error getting the shape based on OpenCV', e)
+          updateStatus('Error getting the shape based on OpenCV')
+      }
+  }
+
+
+  /**
+   * Function to request the server to get the shape based
+   * on distance only.
+   */
+  function requestShapeFromDistance() {
+      //...
+      try {
+          // Make request to server
+          return axios.get('/get_shape_from_distance')
+      } catch (e) {
+          console.log('Error starting the Motor', e)
+          updateStatus('Error starting the Motor')
+
+      }
+  }
+
+</script>
